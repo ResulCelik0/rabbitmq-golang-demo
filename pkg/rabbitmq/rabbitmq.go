@@ -32,6 +32,11 @@ func (r *RabbitMQ) CreateChannel(name string) (err error) {
 }
 
 func (r *RabbitMQ) CloseChannel(name string) (err error) {
+	_, err = r.channels[name].QueueDelete(name, false, false, false)
+	if err != nil {
+		return
+	}
+
 	err = r.channels[name].Close()
 	return
 }
