@@ -1,0 +1,35 @@
+package main
+
+import (
+	"fmt"
+	"log"
+
+	"github.com/ResulCelik0/rabbitmq-golang-demo/pkg/rabbitmq"
+)
+
+func main() {
+	fmt.Println("Hello from consumer!")
+	mq := rabbitmq.NewRabbitMQ("amqp://guest:guest@localhost:5672/")
+	err := mq.Connect()
+	if err != nil {
+		panic(err)
+	}
+	defer mq.Close()
+	err = mq.CreateChannel("merhabaRabbitMQ")
+	if err != nil {
+		panic(err)
+	}
+	defer mq.CloseChannel("merhabaRabbitMQ")
+	mess, err := mq.Consume("merhabaRabbitMQ")
+	if err != nil {
+		panic(err)
+	}
+	var forever chan struct{}
+	go func() {
+		for m := range mess {
+			fmt.Println(string(m.Body))
+		}
+	}()
+	log.Printf(" [*] Waiting for messages. To exit press CTRL+C")
+	<-forever
+}
