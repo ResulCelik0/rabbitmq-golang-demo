@@ -3,6 +3,8 @@ package main
 import (
 	"fmt"
 	"log"
+	"os"
+	"os/signal"
 
 	"github.com/ResulCelik0/rabbitmq-golang-demo/pkg/rabbitmq"
 )
@@ -24,12 +26,13 @@ func main() {
 	if err != nil {
 		panic(err)
 	}
-	var forever chan struct{}
-	go func() {
-		for m := range mess {
-			fmt.Println(string(m.Body))
-		}
-	}()
-	log.Printf(" [*] Waiting for messages. To exit press CTRL+C")
-	<-forever
+	c := make(chan os.Signal, 1)
+	signal.Notify(c, os.Interrupt)
+	select {
+	case m := <-mess:
+		log.Println(string(m.Body))
+	case <-c:
+		fmt.Println("Exiting..")
+		break
+	}
 }
